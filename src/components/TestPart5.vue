@@ -68,6 +68,37 @@ const toggleMobileMenu = () => {
     openDropdown.value = null
   }
 }
+
+// Light / Dark Mode Toggle
+import { onMounted } from 'vue'
+
+const isDarkMode = ref(true)
+
+const toggleTheme = () => {
+  isDarkMode.value = !isDarkMode.value
+  updateTheme()
+}
+
+const updateTheme = () => {
+  if (isDarkMode.value) {
+    document.documentElement.removeAttribute('data-theme')
+    localStorage.setItem('theme', 'dark')
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light')
+    localStorage.setItem('theme', 'light')
+  }
+}
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme) {
+    isDarkMode.value = savedTheme === 'dark'
+  } else {
+    // Check system preference
+    isDarkMode.value = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  updateTheme()
+})
 </script>
 
 <template>
@@ -75,12 +106,16 @@ const toggleMobileMenu = () => {
     <!-- Header with menu -->
     <header class="app-header">
       <div class="header-content">
-        <h1 class="header-title">CỐ LÊN :)))</h1>
+        <div class="header-left">
+          <h1 class="header-title">CỐ LÊN :)))</h1>
+        </div>
         
-        <button class="mobile-menu-btn" @click="toggleMobileMenu">
-          <svg v-if="!mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-          <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+        <div class="header-actions">
+          <button class="mobile-menu-btn" @click="toggleMobileMenu">
+            <svg v-if="!mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
 
         <div class="menu-bar" :class="{ 'is-open': mobileMenuOpen }">
           <div v-for="test in tests" :key="test.id" class="dropdown-wrapper">
@@ -106,6 +141,14 @@ const toggleMobileMenu = () => {
               </button>
             </div>
           </div>
+            <button class="theme-toggle-btn" @click="toggleTheme" :title="isDarkMode ? 'Bật giao diện Nền Sáng' : 'Bật giao diện Nền Tối'">
+            <svg v-if="isDarkMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+            <button class=" mobile-menu-btn" @click="toggleMobileMenu">
+            <svg v-if="!mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
       </div>
     </header>
