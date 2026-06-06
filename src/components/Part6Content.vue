@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   currentTest: {
@@ -14,6 +14,10 @@ const props = defineProps({
 
 const currentImageIndex = ref(0)
 const isLoadingIframe = ref(true)
+
+// Resize state
+const leftPanelWidth = ref(50) // Phần trăm
+const isResizing = ref(false)
 
 const testImages = computed(() => {
   const images = []
@@ -185,12 +189,62 @@ watch(currentImageIndex, (newVal, oldVal) => {
   panX.value = 0
   panY.value = 0
 })
+
+// Resizer handlers
+const onResizerMouseDown = (e) => {
+  e.preventDefault()
+  isResizing.value = true
+  document.body.style.userSelect = 'none'
+  document.body.style.cursor = 'col-resize'
+}
+
+const onMouseMove = (e) => {
+  if (!isResizing.value) return
+  e.preventDefault()
+  
+  const container = document.querySelector('.part6-container')
+  if (!container) return
+  
+  const containerRect = container.getBoundingClientRect()
+  const newX = e.clientX - containerRect.left
+  const newWidth = (newX / containerRect.width) * 100
+  
+  // Đặt giới hạn: min 20%, max 80%
+  if (newWidth >= 20 && newWidth <= 80) {
+    leftPanelWidth.value = newWidth
+  }
+}
+
+const onMouseUp = (e) => {
+  e.preventDefault()
+  isResizing.value = false
+  document.body.style.userSelect = ''
+  document.body.style.cursor = ''
+}
+
+// Setup event listeners khi component mount
+onMounted(() => {
+  document.addEventListener('mousemove', onMouseMove, true)
+  document.addEventListener('mouseup', onMouseUp, true)
+  document.addEventListener('selectstart', (e) => {
+    if (isResizing.value) e.preventDefault()
+  }, true)
+})
+
+// Cleanup event listeners khi component unmount
+onUnmounted(() => {
+  document.removeEventListener('mousemove', onMouseMove, true)
+  document.removeEventListener('mouseup', onMouseUp, true)
+})
 </script>
 
 <template>
-  <div class="part6-container">
+  <div class="part6-container" :class="{ 'is-resizing': isResizing }">
     <!-- Images Panel -->
-    <div class="images-panel">
+    <div 
+      class="images-panel"
+      :style="{ width: `${leftPanelWidth}%` }"
+    >
       <!-- Image Display -->
       <div 
         class="image-display"
@@ -256,8 +310,18 @@ watch(currentImageIndex, (newVal, oldVal) => {
       </div>
     </div>
 
+    <!-- Resizer Divider -->
+    <div 
+      class="resizer"
+      @mousedown="onResizerMouseDown"
+      :class="{ 'is-resizing': isResizing }"
+    ></div>
+
     <!-- iframe Panel -->
-    <div class="iframe-panel">
+    <div 
+      class="iframe-panel"
+      :style="{ width: `${100 - leftPanelWidth}%` }"
+    >
       <div v-if="isLoadingIframe" class="loading-overlay">
         <div class="spinner"></div>
         <p>Đang tải bài thi, vui lòng đợi...</p>
